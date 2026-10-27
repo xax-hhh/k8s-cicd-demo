@@ -1,0 +1,25 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cicd-demo
+  namespace: default
+  labels:
+    app: cicd-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cicd-demo
+  template:
+    metadata:
+      labels:
+        app: cicd-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.30.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
