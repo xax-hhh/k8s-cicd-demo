@@ -1,19 +1,39 @@
-name: Test K8s Runner
+name: Build and Push to Harbor
 
-on: 
+on:
   push:
-    branches: [ "main" ] # 当你推送到 main 分支时触发
+    branches: [ "main" ]
 
 jobs:
-  hello-runner:
-    runs-on: my-runners    # 这里必须写你 Helm 安装时的名字
+  build-and-push:
+    runs-on: my-runners
     steps:
-      - name: 打印欢迎信息
-        run: |
-          echo "Hello from my self-hosted runner inside K8s!"
-          echo "当前 Pod 的主机名是: $(hostname)"
-          
-      - name: 测试 Docker 环境 (DinD)
-        run: |
-          echo "测试 Docker 命令..."
-          docker version
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. 官方标准的登录方式，自动处理密码安全
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: harbor.k8s.local:32078
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      # 2. 准备 Docker 镜像的标签（使用 Git Commit SHA，非常专业）
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: harbor.k8s.local:32078/myapp/k8s-cicd-demo
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest
+
+      # 3. 使用官方标准的构建与推送 Action
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
