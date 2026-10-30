@@ -8,31 +8,32 @@ jobs:
   build-and-push:
     runs-on: my-runners
     steps:
-      # 1. 先测试代理，并把 Git 暴力指向代理
       - name: Setup Git Proxy
         run: |
-          echo "====== 测试 Pod 内部代理是否连通 ======"
-          curl -I -x http://192.168.31.115:7890 https://github.com || true
-          
-          echo "====== 强制 Git 走代理 ======"
           git config --global http.proxy http://192.168.31.115:7890
           git config --global https.proxy http://192.168.31.115:7890
 
-      # 2. 拉取代码（现在有了上面的强配，应该能秒过）
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # 3. 准备证书并登录 Harbor
       - name: Prepare Cert and Login
         run: |
-          mkdir -p ~/.docker/certs.d/192.168.66.21:32078
-          echo "${{ secrets.HARBOR_CA_CRT }}" | base64 -d > ~/.docker/certs.d/192.168.66.21:32078/ca.crt
-          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login 192.168.66.21:32078 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+          echo "====== 动态修改 /etc/hosts ======"
+          # 强行把域名写进 Pod 内部
+          sudo sh -c 'echo "192.168.66.21 harbor.k8s.local" >> /etc/hosts'
+          
+          echo "====== 配置证书 ======"
+          mkdir -p ~/.docker/certs.d/harbor.k8s.local:32078
+          echo "${{ secrets.HARBOR_CA_CRT }}" | base64 -d > ~/.docker/certs.d/harbor.k8s.local:32078/ca.crt
+          
+          echo "====== 登录 Harbor ======"
+          # 使用域名登录，这样 Docker 会发送 SNI，Envoy Gateway 就能放行
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.k8s.local:32078 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
-      # 4. 构建并推送
       - name: Build and push Docker image
         run: |
-          docker build -t 192.168.66.21:32078/myapp/k8s-cicd-demo:latest .
-          docker push 192.168.66.21:32078/myapp/k8s-cicd-demo:latest
+          # 同样使用域名进行构建和推送
+          docker build -t harbor.k8s.local:32078/myapp/k8s-cicd-demo:latest .
+          docker push harbor.k8s.local:32078/myapp/k8s-cicd-demo:latest
