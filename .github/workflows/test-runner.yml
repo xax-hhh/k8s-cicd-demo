@@ -11,28 +11,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug DNS and Cert
+      - name: Prepare Cert and Login
         run: |
-          echo "====== 查看 /etc/hosts ======"
-          cat /etc/hosts || true
-          echo "====== 测试网络连通性 ======"
-          ping -c 2 harbor.k8s.local || true
-          echo "====== 查看证书目录 ======"
-          ls -l /etc/docker/certs.d/harbor.k8s.local:32078/ || true
-          echo "====== 查看代理环境变量 ======"
-          env | grep -i proxy || true
-
-      - name: Login to Harbor
-        env:
-          HARBOR_USER: ${{ secrets.HARBOR_USERNAME }}
-          HARBOR_PASS: ${{ secrets.HARBOR_PASSWORD }}
-        run: |
-          echo "$HARBOR_PASS" | docker login harbor.k8s.local:32078 -u "$HARBOR_USER" --password-stdin
+          # 注意：这里我们用 IP 192.168.66.21 代替域名
+          mkdir -p ~/.docker/certs.d/192.168.66.21:32078
+          echo "${{ secrets.HARBOR_CA_CRT }}" | base64 -d > ~/.docker/certs.d/192.168.66.21:32078/ca.crt
+          
+          # 用 IP 登录
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login 192.168.66.21:32078 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
       - name: Build and push Docker image
         run: |
-          # 先看看当前目录有没有 Dockerfile
-          ls -l
-          # 构建并推送
-          docker build -t harbor.k8s.local:32078/myapp/k8s-cicd-demo:latest .
-          docker push harbor.k8s.local:32078/myapp/k8s-cicd-demo:latest
+          # 构建并推送到 IP 地址
+          docker build -t 192.168.66.21:32078/myapp/k8s-cicd-demo:latest .
+          docker push 192.168.66.21:32078/myapp/k8s-cicd-demo:latest
