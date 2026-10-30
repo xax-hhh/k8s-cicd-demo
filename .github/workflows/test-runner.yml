@@ -1,0 +1,19 @@
+name: Test K8s Runner
+
+on: 
+  push:
+    branches: [ "main" ] # 当你推送到 main 分支时触发
+
+jobs:
+  hello-runner:
+    runs-on: my-runners    # 这里必须写你 Helm 安装时的名字
+    steps:
+      - name: 打印欢迎信息
+        run: |
+          echo "Hello from my self-hosted runner inside K8s!"
+          echo "当前 Pod 的主机名是: $(hostname)"
+          
+      - name: 测试 Docker 环境 (DinD)
+        run: |
+          echo "测试 Docker 命令..."
+          docker version
