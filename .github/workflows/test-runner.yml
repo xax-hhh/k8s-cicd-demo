@@ -13,11 +13,11 @@ jobs:
 
       # 1. 官方标准的登录方式，自动处理密码安全
       - name: Login to Harbor
-        uses: docker/login-action@v3
-        with:
-          registry: harbor.k8s.local:32078
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
+        env:
+          HARBOR_USER: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASS: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          echo "$HARBOR_PASS" | docker login harbor.k8s.local:32078 -u "$HARBOR_USER" --password-stdin
 
       # 2. 准备 Docker 镜像的标签（使用 Git Commit SHA，非常专业）
       - name: Extract Docker metadata
