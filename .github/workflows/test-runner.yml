@@ -18,19 +18,14 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Prepare Cert and Login
-        run: |
-          echo "====== 配置证书 ======"
-          # 直接在当前用户目录下创建证书，不需要 sudo
-          mkdir -p ~/.docker/certs.d/harbor.k8s.local:32078
-          echo "${{ secrets.HARBOR_CA_CRT }}" | base64 -d > ~/.docker/certs.d/harbor.k8s.local:32078/ca.crt
-          
-          echo "====== 登录 Harbor ======"
-          # 添加 --tls-verify=false 参数，并在外部加上 hosts 的 IP，双重保险
-          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.k8s.local:32078 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin --tls-verify=false
-      
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: harbor.k8s.local:32078
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
       - name: Build and push Docker image
         run: |
-          # 同样使用域名进行构建和推送
           docker build -t harbor.k8s.local:32078/myapp/k8s-cicd-demo:latest .
           docker push harbor.k8s.local:32078/myapp/k8s-cicd-demo:latest
