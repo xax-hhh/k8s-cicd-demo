@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - harbor.k8s.local:32078/myapp/ops-task-demo:f4f0d07
