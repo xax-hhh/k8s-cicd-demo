@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - harbor.k8s.local:32078/myapp/ops-task-demo:b287b13
+  - harbor.k8s.local:32078/myapp/ops-task-demo:8ff2159
