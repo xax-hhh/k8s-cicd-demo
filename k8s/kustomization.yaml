@@ -7,5 +7,5 @@ resources:
 
 # 告诉 Argo CD 和 Image Updater，以后更新镜像就改这里
 images:
-  - name: harbor.k8s.local:32078/myapp/k8s-cicd-demo
+  - name: harbor.k8s.local:32078/myapp/ops-task-demo
     newTag: initial  
