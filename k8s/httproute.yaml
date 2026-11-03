@@ -1,5 +1,3 @@
-# 按你现有 Envoy Gateway 的 Gateway 名称、namespace 和域名修改。
-# 不确定时先不要 apply；可先用 kubectl port-forward 验证应用。
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -7,9 +5,8 @@ metadata:
   namespace: default
 spec:
   parentRefs:
-    - name: monitoring-gateway
-      namespace: monitoring
-      sectionName: https
+    - name: app-gateway
+      sectionName: http
   hostnames:
     - task-demo.example.com
   rules:
