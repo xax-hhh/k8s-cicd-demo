@@ -17,7 +17,6 @@ spec:
         - name: harbor-cred
       containers:
         - name: my-demo-app
-          # 注意：不用写 :latest，Kustomize 会自动加上真实的 Tag
           image: harbor.k8s.local:32078/myapp/k8s-cicd-demo
           ports:
             - containerPort: 80
