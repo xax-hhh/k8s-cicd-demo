@@ -11,7 +11,9 @@ RUN groupadd --system app && useradd --system --gid app --home-dir /app app \
     && mkdir -p /data && chown -R app:app /app /data
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# 👇 修改了这里：换用清华源，并添加 trusted-host 信任
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn
 
 COPY --chown=app:app app.py gunicorn.conf.py ./
 COPY --chown=app:app templates ./templates

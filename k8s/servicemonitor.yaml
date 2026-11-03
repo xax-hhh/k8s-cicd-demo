@@ -13,7 +13,7 @@ spec:
       app.kubernetes.io/name: task-demo
   namespaceSelector:
     matchNames:
-      - task-demo
+      - default
   endpoints:
     - port: http
       path: /metrics

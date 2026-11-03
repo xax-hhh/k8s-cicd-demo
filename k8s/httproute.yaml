@@ -7,8 +7,9 @@ metadata:
   namespace: default
 spec:
   parentRefs:
-    - name: YOUR_GATEWAY_NAME
-      namespace: envoy-gateway-system
+    - name: monitoring-gateway
+      namespace: monitoring
+      sectionName: https
   hostnames:
     - task-demo.example.com
   rules:
