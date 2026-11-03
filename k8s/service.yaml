@@ -1,13 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: my-demo-app-svc
+  name: task-demo
   namespace: default
+  labels:
+    app.kubernetes.io/name: task-demo
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
-    app: my-demo-app
+    app.kubernetes.io/name: task-demo
   ports:
-    - port: 80
-      targetPort: 80
-      nodePort: 30080
+    - name: http
+      port: 80
+      targetPort: http

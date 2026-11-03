@@ -3,8 +3,9 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - pvc.yaml
 
 # 告诉 Argo CD 和 Image Updater，以后更新镜像就改这里
 images:
   - name: harbor.k8s.local:32078/myapp/k8s-cicd-demo
-    newTag: latest  # 初始给个 latest，Image Updater 接管后会自动改成哈希
+    newTag: initial  

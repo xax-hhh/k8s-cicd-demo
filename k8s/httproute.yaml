@@ -1,0 +1,21 @@
+# 按你现有 Envoy Gateway 的 Gateway 名称、namespace 和域名修改。
+# 不确定时先不要 apply；可先用 kubectl port-forward 验证应用。
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: task-demo
+  namespace: default
+spec:
+  parentRefs:
+    - name: YOUR_GATEWAY_NAME
+      namespace: envoy-gateway-system
+  hostnames:
+    - task-demo.example.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: task-demo
+          port: 80

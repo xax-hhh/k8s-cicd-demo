@@ -1,0 +1,56 @@
+name: Pure CI Pipeline
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  HARBOR_REGISTRY: harbor.k8s.local:32078
+  HARBOR_PROJECT: myapp
+  IMAGE_NAME: ops-task-demo
+
+jobs:
+  build-and-push:
+    runs-on: my-runners
+    steps:
+      # 保留你现有环境验证过的 Git 代理配置，放在 checkout 之前。
+      - name: Setup Git Proxy
+        run: |
+          git config --global http.proxy http://192.168.31.115:7890
+          git config --global https.proxy http://192.168.31.115:7890
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set Short SHA
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "SHORT_SHA=$SHORT_SHA" >> "$GITHUB_ENV"
+          echo "Target image tag: $SHORT_SHA"
+
+      # 依赖 Runner 上已有的 CA 文件；不在 workflow 中关闭 TLS 校验。
+      - name: Setup Harbor Cert
+        run: |
+          install -d "$HOME/.docker/certs.d/${HARBOR_REGISTRY}"
+          test -s /tmp/harbor-ca/ca.crt
+          install -m 0644 /tmp/harbor-ca/ca.crt \
+            "$HOME/.docker/certs.d/${HARBOR_REGISTRY}/ca.crt"
+
+      - name: Login to Harbor
+        env:
+          HARBOR_USER: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASS: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          test -n "$HARBOR_USER"
+          test -n "$HARBOR_PASS"
+          echo "$HARBOR_PASS" | docker login "$HARBOR_REGISTRY" \
+            -u "$HARBOR_USER" --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_FULL="${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${SHORT_SHA}"
+          docker build -t "$IMAGE_FULL" .
+          docker push "$IMAGE_FULL"
+          echo "Pushed image: $IMAGE_FULL"
