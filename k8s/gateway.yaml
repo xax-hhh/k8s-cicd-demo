@@ -5,6 +5,13 @@ metadata:
   namespace: default
 spec:
   gatewayClassName: eg
+
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: app-envoy-proxy
+
   listeners:
     - name: http
       protocol: HTTP
@@ -13,3 +20,16 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: app-envoy-proxy
+  namespace: default
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        type: NodePort
+        externalTrafficPolicy: Cluster
