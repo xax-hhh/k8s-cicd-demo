@@ -1,19 +1,21 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
-metadata:
-  name: task-demo
+metadata: 
+  name: guestbook-route
   namespace: default
 spec:
   parentRefs:
-    - name: app-gateway
-      sectionName: http
-  hostnames:
-    - task-demo.example.com
+    # 👇 接入你新创建的业务网关，不再用 monitoring-gateway
+    - name: envoy-default-app-gateway
+      namespace: envoy-gateway-system
+  hostnames: 
+    - "guestbook.k8s.local"
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /
-      backendRefs:
-        - name: task-demo
-          port: 80
+    - matches: 
+        - path: { type: PathPrefix, value: /api }
+      backendRefs: 
+        - { name: backend-svc, port: 8080 }
+    - matches: 
+        - path: { type: PathPrefix, value: / }
+      backendRefs: 
+        - { name: frontend-svc, port: 80 }
