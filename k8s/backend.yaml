@@ -1,35 +1,62 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
-metadata: { name: guestbook-data, namespace: default }
+metadata:
+  name: guestbook-data
+  namespace: default
 spec:
-  accessModes: [ReadWriteOnce]
+  accessModes:
+    - ReadWriteOnce
   storageClassName: longhorn
-  resources: { requests: { storage: 1Gi } }
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: guestbook-backend, namespace: default }
+metadata:
+  name: guestbook-backend
+  namespace: default
 spec:
   replicas: 1
-  strategy: { type: Recreate }
-  selector: { matchLabels: { app: guestbook-backend } }
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: guestbook-backend
   template:
-    metadata: { labels: { app: guestbook-backend } }
+    metadata:
+      labels:
+        app: guestbook-backend
     spec:
+      imagePullSecrets:
+        - name: harbor-cred
       containers:
-      - name: backend
-        image: harbor.k8s.local:32078/myapp/guestbook-backend:initial
-        env: [{ name: DB_PATH, value: /data/guestbook.db }]
-        volumeMounts: [{ name: data, mountPath: /data }]
-        ports: [{ containerPort: 8080 }]
-        readinessProbe: { httpGet: { path: /ready, port: 8080 } }
+        - name: backend
+          image: harbor.k8s.local:32078/myapp/guestbook-backend:initial
+          env:
+            - name: DB_PATH
+              value: /data/guestbook.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
       volumes:
-      - name: data
-        persistentVolumeClaim: { claimName: guestbook-data }
+        - name: data
+          persistentVolumeClaim:
+            claimName: guestbook-data
 ---
 apiVersion: v1
 kind: Service
-metadata: { name: backend-svc, namespace: default }
+metadata:
+  name: backend-svc
+  namespace: default
 spec:
-  selector: { app: guestbook-backend }
-  ports: [{ port: 8080 }]
+  selector:
+    app: guestbook-backend
+  ports:
+    - port: 8080
