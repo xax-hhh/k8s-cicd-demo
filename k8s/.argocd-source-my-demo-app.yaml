@@ -1,3 +1,0 @@
-kustomize:
-  images:
-  - harbor.k8s.local:32078/myapp/guestbook-frontend:35cc3ca

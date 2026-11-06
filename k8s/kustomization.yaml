@@ -6,6 +6,6 @@ resources:
   - httproute.yaml
 images:
   - name: harbor.k8s.local:32078/myapp/guestbook-backend
-    newTag: initial
+    newTag: 35cc3ca
   - name: harbor.k8s.local:32078/myapp/guestbook-frontend
     newTag: 35cc3ca
