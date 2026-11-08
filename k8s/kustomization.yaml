@@ -11,6 +11,6 @@ resources:
 
 images:
   - name: harbor.k8s.local:32078/myapp/guestbook-backend
-    newTag: 35cc3ca
+    newTag: 6e16ba0
   - name: harbor.k8s.local:32078/myapp/guestbook-frontend
     newTag: 6e16ba0
