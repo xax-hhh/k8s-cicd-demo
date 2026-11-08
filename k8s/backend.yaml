@@ -28,6 +28,8 @@ spec:
       labels:
         app: guestbook-backend
     spec:
+      securityContext:
+        fsGroup: 999
       imagePullSecrets:
         - name: harbor-cred
       containers:
@@ -60,3 +62,4 @@ spec:
     app: guestbook-backend
   ports:
     - port: 8080
+      targetPort: 8080
